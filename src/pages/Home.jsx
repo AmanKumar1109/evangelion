@@ -5,26 +5,13 @@ import '../styles/home.css'
 import testimonialAvatar1 from '../assets/testimonial-avatar.png'
 import testimonialAvatar2 from '../assets/testimonial-avatar-2.png'
 import testimonialAvatar3 from '../assets/testimonial-avatar-3.png'
+import bgVideo from '../assets/bg.mp4'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const frameModules = import.meta.glob(
-  '../assets/sequence/ezgif-frame-*.jpg',
-  { eager: true, as: 'url' }
-)
-
-const FRAMES = Object.keys(frameModules)
-  .sort()
-  .map((key) => frameModules[key])
-
-const TOTAL_FRAMES = FRAMES.length
-
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const canvasRef       = useRef(null)
   const spacerRef       = useRef(null)
-  const imagesRef       = useRef([])
-  const frameIdxRef     = useRef(0)
 
   // Intro refs
   const introOverlayRef = useRef(null)
@@ -51,78 +38,14 @@ export default function Home() {
     gsap.set(clientsRef.current, { scale: 1.3, opacity: 0 })
     gsap.set(contactRef.current, { x: '-100vw', opacity: 0 })
 
-    // ── Pre-load frames in batches so main thread isn't blocked ──
-    const images = new Array(TOTAL_FRAMES)
-    imagesRef.current = images
 
-    let i = 0
-    function loadBatch() {
-      const end = Math.min(i + 20, TOTAL_FRAMES)
-      while (i < end) {
-        const img = new Image()
-        img.src = FRAMES[i]
-        images[i] = img
-        i++
-      }
-      if (i < TOTAL_FRAMES) {
-        // yield to browser between batches
-        ;(window.requestIdleCallback || window.setTimeout)(loadBatch)
-      }
-    }
-    loadBatch()
-
-    const canvas = canvasRef.current
-    const ctx    = canvas.getContext('2d')
-
-    const setSize = () => {
-      canvas.width  = window.innerWidth
-      canvas.height = window.innerHeight
-      drawFrame(frameIdxRef.current)
-    }
-    setSize()
-    window.addEventListener('resize', setSize)
-
-    function drawFrame(idx) {
-      const img = imagesRef.current[idx]
-      if (!img) return
-      const render = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        const scale = Math.max(
-          canvas.width  / img.naturalWidth,
-          canvas.height / img.naturalHeight
-        )
-        const w = img.naturalWidth  * scale
-        const h = img.naturalHeight * scale
-        const x = (canvas.width  - w) / 2
-        const y = (canvas.height - h) / 2
-        ctx.drawImage(img, x, y, w, h)
-      }
-      img.complete ? render() : (img.onload = render)
-    }
-
-    drawFrame(0)
-
-    // ── Scroll → frame scrub (full 600vh) ──
-    ScrollTrigger.create({
-      trigger: spacerRef.current,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: 0.5,
-      onUpdate: (self) => {
-        const idx = Math.round(self.progress * (TOTAL_FRAMES - 1))
-        if (idx !== frameIdxRef.current) {
-          frameIdxRef.current = idx
-          drawFrame(idx)
-        }
-      },
-    })
 
     // ── Hero fades out first 12% of scroll ──
     ScrollTrigger.create({
       trigger: spacerRef.current,
       start: 'top top',
       end: '12% top',
-      scrub: true,
+      scrub: 1.5,
       onUpdate: (self) => {
         gsap.set(heroRef.current, {
           opacity: 1 - self.progress,
@@ -143,8 +66,24 @@ export default function Home() {
       scrollTrigger: {
         trigger: spacerRef.current,
         start: '12% top',
-        end: '19% top',
-        scrub: 1,
+        end: '18% top',
+        scrub: 1.5,
+      },
+    })
+
+    // ── About panel: Scroll content if overflowing (mobile) ──
+    gsap.to(aboutRef.current, {
+      scrollTop: () => {
+        const el = aboutRef.current
+        return el ? el.scrollHeight - el.clientHeight : 0
+      },
+      ease: 'none',
+      scrollTrigger: {
+        trigger: spacerRef.current,
+        start: '18% top',
+        end: '24% top',
+        scrub: 1.5,
+        invalidateOnRefresh: true,
       },
     })
 
@@ -159,9 +98,9 @@ export default function Home() {
       immediateRender: false,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '23% top',
+        start: '24% top',
         end: '30% top',
-        scrub: 1,
+        scrub: 1.5,
       },
     })
 
@@ -183,7 +122,7 @@ export default function Home() {
         trigger: spacerRef.current,
         start: '30% top',
         end: '32% top',
-        scrub: 1,
+        scrub: 1.5,
       }
     })
 
@@ -197,8 +136,24 @@ export default function Home() {
       scrollTrigger: {
         trigger: spacerRef.current,
         start: '30% top',
-        end: '38% top',
-        scrub: 1,
+        end: '36% top',
+        scrub: 1.5,
+      },
+    })
+
+    // ── Testimonials panel: Scroll content if overflowing (mobile) ──
+    gsap.to(testimonialRef.current, {
+      scrollTop: () => {
+        const el = testimonialRef.current
+        return el ? el.scrollHeight - el.clientHeight : 0
+      },
+      ease: 'none',
+      scrollTrigger: {
+        trigger: spacerRef.current,
+        start: '36% top',
+        end: '46% top',
+        scrub: 1.5,
+        invalidateOnRefresh: true,
       },
     })
 
@@ -212,9 +167,9 @@ export default function Home() {
       immediateRender: false,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '43% top',
-        end: '51% top',
-        scrub: 1,
+        start: '46% top',
+        end: '52% top',
+        scrub: 1.5,
       },
     })
 
@@ -222,9 +177,9 @@ export default function Home() {
       opacity: 0,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '49% top',
-        end: '51% top',
-        scrub: 1,
+        start: '50% top',
+        end: '52% top',
+        scrub: 1.5,
       }
     })
 
@@ -232,7 +187,7 @@ export default function Home() {
     ScrollTrigger.create({
       trigger: spacerRef.current,
       start: '32% top',
-      end: '49% top',
+      end: '50% top',
       onToggle: (self) => {
         gsap.set(testimonialRef.current, { pointerEvents: self.isActive ? 'all' : 'none' })
       }
@@ -246,9 +201,25 @@ export default function Home() {
       immediateRender: false,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '51% top',
-        end: '57% top',
-        scrub: 1,
+        start: '52% top',
+        end: '58% top',
+        scrub: 1.5,
+      },
+    })
+
+    // ── Clients panel: Scroll content if overflowing (mobile) ──
+    gsap.to(clientsRef.current, {
+      scrollTop: () => {
+        const el = clientsRef.current
+        return el ? el.scrollHeight - el.clientHeight : 0
+      },
+      ease: 'none',
+      scrollTrigger: {
+        trigger: spacerRef.current,
+        start: '58% top',
+        end: '64% top',
+        scrub: 1.5,
+        invalidateOnRefresh: true,
       },
     })
 
@@ -260,9 +231,9 @@ export default function Home() {
       immediateRender: false,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '62% top',
-        end: '68% top',
-        scrub: 1,
+        start: '64% top',
+        end: '70% top',
+        scrub: 1.5,
       },
     })
 
@@ -270,7 +241,7 @@ export default function Home() {
     ScrollTrigger.create({
       trigger: spacerRef.current,
       start: '54% top',
-      end: '62% top',
+      end: '68% top',
       onToggle: (self) => {
         gsap.set(clientsRef.current, { pointerEvents: self.isActive ? 'all' : 'none' })
       }
@@ -284,23 +255,25 @@ export default function Home() {
       immediateRender: false,
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '68% top',
+        start: '70% top',
         end: '78% top',
-        scrub: 1,
+        scrub: 1.5,
       },
     })
 
-    // ── Contact form: Slide OUT horizontally to right ──
+    // ── Contact panel: Scroll content if overflowing (mobile) ──
     gsap.to(contactRef.current, {
-      x: '100vw',
-      opacity: 0,
-      ease: 'power2.in',
-      immediateRender: false,
+      scrollTop: () => {
+        const el = contactRef.current
+        return el ? el.scrollHeight - el.clientHeight : 0
+      },
+      ease: 'none',
       scrollTrigger: {
         trigger: spacerRef.current,
-        start: '90% top',
-        end: '100% top',
-        scrub: 1,
+        start: '78% top',
+        end: '90% top',
+        scrub: 1.5,
+        invalidateOnRefresh: true,
       },
     })
 
@@ -308,7 +281,7 @@ export default function Home() {
     ScrollTrigger.create({
       trigger: spacerRef.current,
       start: '72% top',
-      end: '90% top',
+      end: '100% top',
       onToggle: (self) => {
         gsap.set(contactRef.current, { pointerEvents: self.isActive ? 'all' : 'none' })
       }
@@ -351,21 +324,25 @@ export default function Home() {
 
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill())
-      window.removeEventListener('resize', setSize)
     }
   }, [])
 
   return (
     <>
-      {/* ── FIXED CANVAS — always behind everything ── */}
-      <canvas
-        ref={canvasRef}
+      {/* ── FIXED VIDEO BACKGROUND — always behind everything ── */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        src={bgVideo}
         style={{
           position: 'fixed',
-          top: 0, left: 0,
+          top: 0,
+          left: 0,
           width: '100vw',
           height: '100vh',
-          display: 'block',
+          objectFit: 'cover',
           zIndex: 0,
         }}
       />

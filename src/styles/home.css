@@ -1222,6 +1222,14 @@ body {
   .contact-panel {
     align-items: flex-start;
     overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  .about-panel::-webkit-scrollbar,
+  .testimonial-panel::-webkit-scrollbar,
+  .clients-panel::-webkit-scrollbar,
+  .contact-panel::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }
 
